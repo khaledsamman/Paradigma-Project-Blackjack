@@ -3,7 +3,8 @@
 module GameFloor where
 
 import Control.Monad.State
-import Cards (Player(playerBet))
+import Cards
+import IOFloor (getPlayerBet)
 
 
 --monad transformer stack
@@ -21,9 +22,9 @@ initialState = GameState {
 
 --computation in game
 
-playerBetAction :: Int -> Game ()
+playerBetAction :: Game ()
 playerBetAction = do
-    bet <- liftIO getPlayerBet
-    player <- gets player
-    let player' = makeBet bet player
-    modify $ \s -> s { player = player' }
+  bet <- liftIO getPlayerBet
+  p0  <- gets player
+  let p1 = makeBet bet p0
+  modify (\s -> s { player = p1 })

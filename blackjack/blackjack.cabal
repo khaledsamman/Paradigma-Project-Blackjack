@@ -27,8 +27,8 @@ library
   exposed-modules:
       Cards
       IOFloor
-  other-modules:
       GameFloor
+  other-modules:
       Lib
       Paths_blackjack
   autogen-modules:

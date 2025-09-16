@@ -14,8 +14,8 @@ shuffleDeck deck = do
 
 
 --get a bet from the player
-getPlayerBet :: Int
-getPlayersBet = do
+getPlayerBet :: IO Int
+getPlayerBet = do
     bet <- do
         putStrLn "Enter your bet (min 10, max 100):"
         readMaybe <$> getLine
@@ -26,4 +26,3 @@ getPlayersBet = do
             putStrLn "Invalid bet amount. Please try again."
             getPlayerBet
 
-            
