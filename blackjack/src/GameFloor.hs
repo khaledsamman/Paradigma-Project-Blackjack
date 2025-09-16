@@ -96,6 +96,6 @@ playerAction = do
                     let pl'' = payout 0 pl'
                     modify (\s -> s { player = pl'' })
                     showPlayerState
-                    -- modifyPlayer 
+                    -- modifyPlayer page 195
     
                 
