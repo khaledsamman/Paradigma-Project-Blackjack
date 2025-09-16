@@ -2,6 +2,15 @@
 
 
 module Cards where
+
+
+
+data GameState = GameState 
+  {
+    deck :: Deck,
+    player :: Player,
+    dealer :: Dealer
+  } deriving (Show)
     
 -- simple algebraic data types for card values and suites
 data CardValue = Two | Three | Four | Five | Six | Seven | Eight 
@@ -23,10 +32,10 @@ instance Show CardValue where
   show c = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"] !! fromEnum c
 
 instance Show CardSuite where
-  show Spades   = "♠"
-  show Clubs    = "♣"
-  show Diamonds = "♦"
-  show Hearts   = "♥"
+  show Spades   = "S"
+  show Clubs    = "C"
+  show Diamonds = "D"
+  show Hearts   = "H"
 
 instance Show Card where
   show (Card a b) = show a ++ show b
