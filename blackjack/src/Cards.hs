@@ -86,3 +86,9 @@ handValue hand =
     adjust total a
       | total > 21 && a > 0 = adjust (total - 10) (a - 1)
       | otherwise           = total
+
+
+--pure functions changing player state after making a bet
+
+makeBet :: Int -> Player -> Player
+makeBet bet player = player { playerBet = bet, playerMoney = playerMoney player - bet }
