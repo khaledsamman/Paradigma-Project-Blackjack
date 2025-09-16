@@ -3,8 +3,6 @@
 
 module Cards where
 
-
-
 data GameState = GameState 
   {
     deck :: Deck,
