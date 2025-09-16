@@ -1,1 +1,4 @@
-main = putStrLn "Hello World!"
+module Main where
+import GameFloor (gameMain)
+main :: IO ()
+main = gameMain

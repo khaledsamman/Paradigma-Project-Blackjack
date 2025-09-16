@@ -92,3 +92,8 @@ handValue hand =
 
 makeBet :: Int -> Player -> Player
 makeBet bet player = player { playerBet = bet, playerMoney = playerMoney player - bet }
+
+-- payout function to update player money after win/loss
+payout :: Int -> Player -> Player
+payout amt p = p { playerMoney = playerMoney p + amt, playerBet = 0 }
+
