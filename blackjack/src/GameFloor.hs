@@ -6,6 +6,7 @@ import Control.Monad.State
 import Data.Char (toLower)
 import Cards
 import IOFloor (getPlayerBet, shuffleDeck)
+import Control.Monad.IO.Class (MonadIO(liftIO))
 
 -- monad transformer stack
 type Game = StateT GameState IO
@@ -119,8 +120,6 @@ roundOnce = do
   playerBetAction
   dealCardsToPlayer 2
   dealCardsToDealer 2
-  showDealerHand
-  showPlayerState
 
   -- player's turn
   playerAction
@@ -130,6 +129,16 @@ roundOnce = do
   let pv = handValue (playerHand p)
   when (pv <= 21) (dealerAction pv)
 
+-- loop after each round until player quits
+
+gameLoop :: Game ()
+gameLoop = do
+    roundOnce
+    liftIO $ putStr "Play another round? (y/n) > "
+    ans <- liftIO getLine
+    when (map toLower ans == "y") gameLoop
+
+
 -- runner to start a round from the console
 gameMain :: IO ()
-gameMain = evalStateT roundOnce initialState
+gameMain = evalStateT gameLoop initialState
