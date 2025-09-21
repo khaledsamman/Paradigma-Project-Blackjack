@@ -142,3 +142,6 @@ gameLoop = do
 -- runner to start a round from the console
 gameMain :: IO ()
 gameMain = evalStateT gameLoop initialState
+
+
+---------------------------------- Het bovenstaande is van tutorial ----------------------------------

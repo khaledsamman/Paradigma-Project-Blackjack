@@ -26,3 +26,4 @@ getPlayerBet = do
             putStrLn "Invalid bet amount. Please try again."
             getPlayerBet
 
+---------------------------------- Het bovenstaande is van tutorial ----------------------------------

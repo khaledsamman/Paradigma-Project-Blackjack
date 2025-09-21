@@ -97,3 +97,4 @@ makeBet bet player = player { playerBet = bet, playerMoney = playerMoney player 
 payout :: Int -> Player -> Player
 payout amt p = p { playerMoney = playerMoney p + amt, playerBet = 0 }
 
+---------------------------------- Het bovenstaande is van tutorial ----------------------------------
