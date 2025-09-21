@@ -42,7 +42,8 @@ library:
   - Cards
   - IOFloor
   - GameFloor
-
+  - BlackjackAI
+  
 executables:
   blackjack:
     main:                Main.hs

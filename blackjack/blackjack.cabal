@@ -29,6 +29,7 @@ library
       IOFloor
       GameFloor
   other-modules:
+      BlackjackAI
       Lib
       Paths_blackjack
   autogen-modules:
