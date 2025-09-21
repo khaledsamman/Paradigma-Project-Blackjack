@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module BlackjackAI 
-    (hiLoCard, runningCount) where
+    (hiLoCard, runningCount, remainingDecks) where
 
 import Cards 
 
@@ -29,3 +29,11 @@ hiLoCard (Card v _) = case v of
 -- sum Hi-Lo values over a list of seen cards
 runningCount :: [Card] -> Int
 runningCount = sum . map hiLoCard
+
+
+-- casinos use up to 8 decks in blackjack, so only fair if we do the same xd
+-- To turn a running count into a true count, you divide by decks remaining. This function gives you that divisor (e.g., 26 cards left → 0.5 decks).
+remainingDecks :: Deck -> Double
+remainingDecks d =
+  let rc = max 1 (length d)
+  in fromIntegral rc / 52.0

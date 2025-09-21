@@ -43,7 +43,7 @@ library:
   - IOFloor
   - GameFloor
   - BlackjackAI
-  
+
 executables:
   blackjack:
     main:                Main.hs
