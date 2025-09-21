@@ -28,8 +28,8 @@ library
       Cards
       IOFloor
       GameFloor
-  other-modules:
       BlackjackAI
+  other-modules:
       Lib
       Paths_blackjack
   autogen-modules:
