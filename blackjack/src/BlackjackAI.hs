@@ -37,3 +37,6 @@ remainingDecks :: Deck -> Double
 remainingDecks d =
   let rc = max 1 (length d)
   in fromIntegral rc / 52.0
+
+trueCount :: [Card] -> Deck -> Double
+trueCount seen d = fromIntegral (runningCount seen) / remainingDecks d
