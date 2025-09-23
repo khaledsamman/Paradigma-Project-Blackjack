@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module BlackjackAI 
-    (hiLoCard, runningCount, remainingDecks) where
+    (hiLoCard, runningCount, remainingDecks, trueCount) where
 
 import Cards 
 

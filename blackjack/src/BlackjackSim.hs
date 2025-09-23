@@ -17,5 +17,11 @@ isBust h = handTotal h > 21
 dealerShouldStand :: Hand -> Bool
 dealerShouldStand h = handTotal h >= 17
 
+
+-- https://stackoverflow.com/questions/2225774/haskell-pattern-matching-what-is-it
+-- https://en.wikibooks.org/wiki/Haskell/Pattern_matching
+-- https://wiki.haskell.org/index.php?title=Lazy_pattern_match
+
 chooseOne :: [a] -> [(a, [a])]
 chooseOne [] = []
+chooseOne (x:xs) = (x, xs) : [ (y, x:ys) | (y, ys) <- chooseOne xs ]
