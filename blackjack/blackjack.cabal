@@ -29,6 +29,7 @@ library
       IOFloor
       GameFloor
       BlackjackAI
+      BlackjackSim
   other-modules:
       Lib
       Paths_blackjack

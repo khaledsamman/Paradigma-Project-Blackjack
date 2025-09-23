@@ -43,6 +43,7 @@ library:
   - IOFloor
   - GameFloor
   - BlackjackAI
+  - BlackjackSim
 
 executables:
   blackjack:
