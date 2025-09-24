@@ -31,3 +31,11 @@ data DealerResult
   = DealerBust
   | DealerTotal Int
   deriving (Eq, Ord, Show)
+
+  -- combine identical outcomes by summing their probabilities
+combine :: [(DealerResult, Double)] -> [(DealerResult, Double)]
+combine = foldr insert []
+  where
+    insert (k, p) acc = case lookup k acc of
+      Nothing -> (k, p) : acc
+      Just q -> (k, p + q) : filter ((/= k) . fst) acc
