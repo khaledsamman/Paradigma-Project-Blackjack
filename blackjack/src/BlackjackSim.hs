@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module BlackjackSim 
-  ( handTotal, isBust, dealerShouldStand, chooseOne
+  ( handTotal, isBust, dealerShouldStand, chooseOne, DealerResult(..)
   ) where
 
 import Cards
@@ -25,3 +25,9 @@ dealerShouldStand h = handTotal h >= 17
 chooseOne :: [a] -> [(a, [a])]
 chooseOne [] = []
 chooseOne (x:xs) = (x, xs) : [ (y, x:ys) | (y, ys) <- chooseOne xs ]
+
+
+data DealerResult
+  = DealerBust
+  | DealerTotal Int
+  deriving (Eq, Ord, Show)
