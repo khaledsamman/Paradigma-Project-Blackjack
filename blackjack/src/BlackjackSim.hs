@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module BlackjackSim 
-  ( handTotal, isBust, dealerShouldStand, chooseOne, DealerResult(..), dealerResultDist
+  ( handTotal, isBust, dealerShouldStand, chooseOne, DealerResult(..), dealerResultDist, evStand
   ) where
 
 import Cards
@@ -46,7 +46,20 @@ dealerResultDist h d
   | dealerShouldStand h = [(DealerTotal (handTotal h), 1.0)]
   | null d = [(DealerTotal (handTotal h), 1.0)] -- No more cards to draw
   | otherwise = combine
-     [  (r, p * fromIntegral(length d))
+     [  (r, p / fromIntegral(length d))
       | (c, d') <- chooseOne d
       , (r, p) <- dealerResultDist (h ++ [c]) d' --Recursie!!! :)
      ]
+  where 
+    n = length d
+
+evStand :: Hand -> Hand -> Deck -> Double
+evStand pHand dHand deck =
+  let pTotal = handValue pHand
+      dist   = dealerResultDist dHand deck  -- [(DealerResult, Probability)]
+      score (DealerBust, prob)              =  1.0 * prob        
+      score (DealerTotal dTotal, prob)
+        | dTotal <  pTotal                  =  1.0 * prob
+        | dTotal == pTotal                  =  0.0 * prob
+        | otherwise                         = -1.0 * prob
+  in  sum (map score dist)
