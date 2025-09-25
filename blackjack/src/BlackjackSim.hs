@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module BlackjackSim 
-  ( handTotal, isBust, dealerShouldStand, chooseOne, DealerResult(..), dealerResultDist, evStand
+  ( handTotal, isBust, dealerShouldStand, chooseOne, DealerResult(..), dealerResultDist, evStand, evHit, decideHitOrStand
   ) where
 
 import Cards
@@ -50,9 +50,8 @@ dealerResultDist h d
       | (c, d') <- chooseOne d
       , (r, p) <- dealerResultDist (h ++ [c]) d' --Recursie!!! :)
      ]
-  where 
-    n = length d
 
+     
 evStand :: Hand -> Hand -> Deck -> Double
 evStand pHand dHand deck =
   let pTotal = handValue pHand
@@ -63,3 +62,24 @@ evStand pHand dHand deck =
         | dTotal == pTotal                  =  0.0 * prob
         | otherwise                         = -1.0 * prob
   in  sum (map score dist)
+
+evHit :: Hand -> Hand -> Deck -> Double
+evHit pHand dHand deck =
+  let branches = chooseOne deck -- [(Card, Deck)]
+      n        = fromIntegral (length branches) :: Double
+      evFor (c, deck') =
+        let p' = pHand ++ [c]
+        in  if handValue p' > 21
+              then -1.0
+              else max (evStand p' dHand deck') -- stand after this hit
+                       (evHit   p' dHand deck') -- or hit again
+  in  if null branches
+        then evStand pHand dHand deck -- no cards = stand
+        else sum (map evFor branches) / n 
+
+
+decideHitOrStand :: Hand -> Hand -> Deck -> (String, Double, Double)
+decideHitOrStand pHand dHand deck =
+  let s = evStand pHand dHand deck
+      h = evHit   pHand dHand deck
+  in if h > s then ("hit", h, s) else ("stand", s, h)
