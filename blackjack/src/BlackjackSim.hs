@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module BlackjackSim 
-  ( handTotal, isBust, dealerShouldStand, chooseOne, DealerResult(..)
+  ( handTotal, isBust, dealerShouldStand, chooseOne, DealerResult(..), dealerResultDist
   ) where
 
 import Cards
@@ -39,3 +39,14 @@ combine = foldr insert []
     insert (k, p) acc = case lookup k acc of
       Nothing -> (k, p) : acc
       Just q -> (k, p + q) : filter ((/= k) . fst) acc
+
+dealerResultDist :: Hand -> Deck -> [(DealerResult, Double)]
+dealerResultDist h d
+  | isBust h = [(DealerBust, 1.0)]
+  | dealerShouldStand h = [(DealerTotal (handTotal h), 1.0)]
+  | null d = [(DealerTotal (handTotal h), 1.0)] -- No more cards to draw
+  | otherwise = combine
+     [  (r, p * fromIntegral(length d))
+      | (c, d') <- chooseOne d
+      , (r, p) <- dealerResultDist (h ++ [c]) d' --Recursie!!! :)
+     ]
