@@ -11,7 +11,11 @@ import Control.Monad.IO.Class (MonadIO(liftIO))
 import BlackjackAI (runningCount, trueCount)
 import BlackjackSim (decideHitOrStand)
 
-
+-- pretty print a hand without extra imports
+showHandSimple :: Hand -> String
+showHandSimple []     = "[]"
+showHandSimple [c]    = "[" ++ show c ++ "]"
+showHandSimple (c:cs) = "[" ++ show c ++ concatMap (\x -> "," ++ show x) cs ++ "]"
 
 -- monad transformer stack
 type Game = StateT GameState IO
@@ -21,7 +25,7 @@ initialState :: GameState
 initialState = GameState
   { player = Player [] 0 1000
   , dealer = Dealer []
-  , deck   = fullDeck
+  , deck   = multiDeck 1
   }
 
 -- prompt the user for a bet and update state
@@ -48,7 +52,7 @@ dealCardsToDealer n = do
       d' = (dealer s) { dealerHand = dealerHand (dealer s) ++ drawn }
   put s { deck = newDeck, dealer = d' }
 
--- show helpers
+-- (kept in case you want the old views elsewhere)
 showPlayerState :: Game ()
 showPlayerState = do
   p <- gets player
@@ -65,32 +69,45 @@ showDealerHand = do
 -- player's turn: loop until stand or bust
 playerAction :: Game ()
 playerAction = do
-  showDealerHand
-  showPlayerState
-  p <- gets player
-  let pv = handValue (playerHand p)
+  s0 <- get
+  let pH0 = playerHand (player s0)
+      pv  = handValue pH0
   if pv > 21
     then liftIO $ putStrLn "Player busts! Dealer wins :("
     else do
-      ---------------------------------- Het bovenstaande is van tutorial ----------------------------------
       s <- get
-      let pHand = playerHand (player s)
-          dHand = dealerHand (dealer s)
-          remDeck   = deck s
-          seen = pHand ++ dHand
-          rc = runningCount seen
-          tc = trueCount seen remDeck
+      let pHand    = playerHand (player s)
+          dHand    = dealerHand (dealer s)
+          bankroll = playerMoney (player s)   -- ADDED
+          bet      = playerBet   (player s)   -- ADDED
+          remDeck  = deck s
+
+          seen     = pHand ++ dHand
+          rc       = runningCount seen
+          tc       = trueCount seen remDeck
           (adv, evA, evB) = decideHitOrStand pHand dHand remDeck
 
       liftIO $ do
-        putStrLn $ "Running count: " ++ show rc ++ ", True count: " ++ show tc
+        putStrLn ""
+        putStrLn "=============================="
+        putStrLn "         CURRENT HAND         "
+        putStrLn "=============================="
+        putStrLn $ "Dealer: " ++ showHandSimple dHand ++ "  (value " ++ show (handValue dHand) ++ ")"
+        putStrLn $ "Player: " ++ showHandSimple pHand ++ "  (value " ++ show (handValue pHand) ++ ")"
+        putStrLn $ "Bet: " ++ show bet ++ "   Bankroll: " ++ show bankroll
+        putStrLn ""
+        putStrLn "--- COUNT INFO ---"
+        putStrLn $ "Running Count: " ++ show rc ++ "   True Count: " ++ take 5 (show tc)
+        putStrLn "--- AI ADVICE ---"
         case adv of
           "hit" ->
-            putStrLn $ "AI Advice: HIT   (EV(hit)=" ++ show evA ++ ", EV(stand)=" ++ show evB ++ ")"
+            putStrLn $ "HIT   (EV(hit)=" ++ take 5 (show evA) ++ ", EV(stand)=" ++ take 5 (show evB) ++ ")"
           "stand" ->
-            putStrLn $ "AI Advice: STAND (EV(stand)=" ++ show evA ++ ", EV(hit)=" ++ show evB ++ ")"
----------------------------------- Het onderstaande is van tutorial ----------------------------------
+            putStrLn $ "STAND (EV(stand)=" ++ take 5 (show evA) ++ ", EV(hit)=" ++ take 5 (show evB) ++ ")"
+        putStrLn ""
+
       act <- liftIO $ do
+        putStrLn "=============================="
         putStr "Choose action: (h)it or (s)tand > "
         getLine
       case map toLower act of
@@ -115,7 +132,6 @@ dealerAction playerValue = do
         then do
           liftIO $ putStrLn "Player wins!"
           p <- gets player
-          -- simple 1:1 payout (win back bet + same amount). Change to *3 if you wish.
           let winAmt = playerBet p * 2
           modify (\s -> s { player = payout winAmt p })
           showPlayerState
@@ -128,16 +144,16 @@ dealerAction playerValue = do
           else do
             liftIO $ putStrLn "Dealer wins."
             p <- gets player
-            -- player already paid bet when placing it; reset bet to 0
             modify (\s -> s { player = payout 0 p })
             showPlayerState
 
 -- one complete round
 roundOnce :: Game ()
 roundOnce = do
-  -- shuffle fresh deck
-  d0 <- liftIO (shuffleDeck fullDeck)
-  modify (\s -> s { deck = d0, player = (player s) { playerHand = [], playerBet = 0 }
+  -- if you want to keep a continuous shoe, reshuffle only when low; otherwise skip
+  -- (left as-is: you now keep the same multiDeck across rounds)
+  -- modify to clear hands/bets only:
+  modify (\s -> s { player = (player s) { playerHand = [], playerBet = 0 }
                   , dealer = (dealer s) { dealerHand = [] } })
 
   playerBetAction
@@ -153,17 +169,18 @@ roundOnce = do
   when (pv <= 21) (dealerAction pv)
 
 -- loop after each round until player quits
-
 gameLoop :: Game ()
 gameLoop = do
-    roundOnce
-    liftIO $ putStr "Play another round? (y/n) > "
-    ans <- liftIO getLine
-    when (map toLower ans == "y") gameLoop
-
+  roundOnce
+  liftIO $ putStr "Play another round? (y/n) > "
+  ans <- liftIO getLine
+  when (map toLower ans == "y") gameLoop
 
 -- runner to start a round from the console
 gameMain :: IO ()
-gameMain = evalStateT gameLoop initialState
-
-
+gameMain = do
+  putStrLn "Welcome to Haskell Blackjack!"
+  putStrLn "Shuffling deck..."
+  shuffledDeck <- shuffleDeck (deck initialState)
+  let initialStateShuffled = initialState { deck = shuffledDeck }
+  evalStateT gameLoop initialStateShuffled

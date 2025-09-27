@@ -98,3 +98,6 @@
   payout amt p = p { playerMoney = playerMoney p + amt, playerBet = 0 }
 
   ---------------------------------- Het bovenstaande is van tutorial ----------------------------------
+
+  multiDeck :: Int -> Deck
+  multiDeck n = concat (replicate n fullDeck)
