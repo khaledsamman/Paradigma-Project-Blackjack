@@ -8,6 +8,11 @@ import Cards
 import IOFloor (getPlayerBet, shuffleDeck)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 
+import BlackjackAI (runningCount, trueCount)
+import BlackjackSim (decideHitOrStand)
+
+
+
 -- monad transformer stack
 type Game = StateT GameState IO
 
@@ -67,6 +72,24 @@ playerAction = do
   if pv > 21
     then liftIO $ putStrLn "Player busts! Dealer wins :("
     else do
+      ---------------------------------- Het bovenstaande is van tutorial ----------------------------------
+      s <- get
+      let pHand = playerHand (player s)
+          dHand = dealerHand (dealer s)
+          remDeck   = deck s
+          seen = pHand ++ dHand
+          rc = runningCount seen
+          tc = trueCount seen remDeck
+          (adv, evA, evB) = decideHitOrStand pHand dHand remDeck
+
+      liftIO $ do
+        putStrLn $ "Running count: " ++ show rc ++ ", True count: " ++ show tc
+        case adv of
+          "hit" ->
+            putStrLn $ "AI Advice: HIT   (EV(hit)=" ++ show evA ++ ", EV(stand)=" ++ show evB ++ ")"
+          "stand" ->
+            putStrLn $ "AI Advice: STAND (EV(stand)=" ++ show evA ++ ", EV(hit)=" ++ show evB ++ ")"
+---------------------------------- Het onderstaande is van tutorial ----------------------------------
       act <- liftIO $ do
         putStr "Choose action: (h)it or (s)tand > "
         getLine
@@ -144,4 +167,3 @@ gameMain :: IO ()
 gameMain = evalStateT gameLoop initialState
 
 
----------------------------------- Het bovenstaande is van tutorial ----------------------------------
