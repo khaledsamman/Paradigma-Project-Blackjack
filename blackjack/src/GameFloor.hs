@@ -172,7 +172,7 @@ roundOnce = do
 gameLoop :: Game ()
 gameLoop = do
   roundOnce
-  liftIO $ putStr "Play another round? (y/n) > "
+  liftIO $ putStrLn "Play another round? (y/n) > "
   ans <- liftIO getLine
   when (map toLower ans == "y") gameLoop
 
