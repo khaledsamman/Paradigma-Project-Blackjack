@@ -17,6 +17,13 @@ showHandSimple []     = "[]"
 showHandSimple [c]    = "[" ++ show c ++ "]"
 showHandSimple (c:cs) = "[" ++ show c ++ concatMap (\x -> "," ++ show x) cs ++ "]"
 
+
+showDealerHidden :: Hand -> String
+showDealerHidden []       = "[]"
+showDealerHidden [c]      = "[" ++ show c ++ "]"
+showDealerHidden (c:cs) = "[" ++ show c ++ ",?]"
+
+
 -- monad transformer stack
 type Game = StateT GameState IO
 
@@ -78,21 +85,21 @@ playerAction = do
       s <- get
       let pHand    = playerHand (player s)
           dHand    = dealerHand (dealer s)
-          bankroll = playerMoney (player s)   -- ADDED
-          bet      = playerBet   (player s)   -- ADDED
+          bankroll = playerMoney (player s)   
+          bet      = playerBet   (player s)   
           remDeck  = deck s
 
-          seen     = pHand ++ dHand
+          seen     = pHand ++ take 1 dHand
           rc       = runningCount seen
           tc       = trueCount seen remDeck
-          (adv, evA, evB) = decideHitOrStand pHand dHand remDeck
+          (adv, evA, evB) = decideHitOrStand pHand (take 1 dHand) remDeck
 
       liftIO $ do
         putStrLn ""
         putStrLn "=============================="
         putStrLn "         CURRENT HAND         "
         putStrLn "=============================="
-        putStrLn $ "Dealer: " ++ showHandSimple dHand ++ "  (value " ++ show (handValue dHand) ++ ")"
+        putStrLn $ "Dealer: " ++ showDealerHidden dHand ++ "  (value ?)"
         putStrLn $ "Player: " ++ showHandSimple pHand ++ "  (value " ++ show (handValue pHand) ++ ")"
         putStrLn $ "Bet: " ++ show bet ++ "   Bankroll: " ++ show bankroll
         putStrLn ""
@@ -184,3 +191,4 @@ gameMain = do
   shuffledDeck <- shuffleDeck (deck initialState)
   let initialStateShuffled = initialState { deck = shuffledDeck }
   evalStateT gameLoop initialStateShuffled
+
