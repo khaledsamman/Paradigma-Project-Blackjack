@@ -35,6 +35,9 @@ initialState = GameState
   , deck   = multiDeck 1
   }
 
+initialDeckSize :: Int
+initialDeckSize = length (deck initialState)
+
 -- prompt the user for a bet and update state
 playerBetAction :: Game ()
 playerBetAction = do
@@ -72,6 +75,7 @@ showDealerHand = do
   d <- gets dealer
   let v = handValue (dealerHand d)
   liftIO $ putStrLn $ "Dealer: " ++ show (dealerHand d) ++ "  (value " ++ show v ++ ")"
+
 
 -- player's turn: loop until stand or bust
 playerAction :: Game ()
@@ -162,6 +166,14 @@ roundOnce = do
   -- modify to clear hands/bets only:
   modify (\s -> s { player = (player s) { playerHand = [], playerBet = 0 }
                   , dealer = (dealer s) { dealerHand = [] } })
+
+  s <- get
+  let cardsLeft    = length (deck s)
+      fractionLeft = fromIntegral cardsLeft / fromIntegral initialDeckSize
+  when (fractionLeft < 0.25) $ do
+    liftIO $ putStrLn "Reshuffling the deck..."
+    shuffled <- liftIO $ shuffleDeck (multiDeck 1)
+    modify (\st -> st { deck = shuffled })
 
   playerBetAction
   dealCardsToPlayer 2
