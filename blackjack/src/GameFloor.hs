@@ -11,7 +11,7 @@ import Control.Monad.IO.Class (MonadIO(liftIO))
 import BlackjackAI (runningCount, trueCount)
 import BlackjackSim (decideHitOrStand)
 
--- pretty print a hand without extra imports
+-- pretty print een hand zonder imports
 showHandSimple :: Hand -> String
 showHandSimple []     = "[]"
 showHandSimple [c]    = "[" ++ show c ++ "]"
@@ -27,7 +27,7 @@ showDealerHidden (c:cs) = "[" ++ show c ++ ",?]"
 -- monad transformer stack
 type Game = StateT GameState IO
 
--- initial game state
+-- initiale game state
 initialState :: GameState
 initialState = GameState
   { player = Player [] 0 1000
@@ -38,7 +38,7 @@ initialState = GameState
 initialDeckSize :: Int
 initialDeckSize = length (deck initialState)
 
--- prompt the user for a bet and update state
+-- vraag inzet van speler
 playerBetAction :: Game ()
 playerBetAction = do
   bet <- liftIO getPlayerBet
@@ -46,7 +46,7 @@ playerBetAction = do
   let p1 = makeBet bet p0
   modify (\s -> s { player = p1 })
 
--- deal to player
+-- kaarten dealen naar speler
 dealCardsToPlayer :: Int -> Game ()
 dealCardsToPlayer n = do
   s <- get
@@ -54,7 +54,7 @@ dealCardsToPlayer n = do
       p' = (player s) { playerHand = playerHand (player s) ++ drawn }
   put s { deck = newDeck, player = p' }
 
--- deal to dealer
+-- kaarten delen naar dealer
 dealCardsToDealer :: Int -> Game ()
 dealCardsToDealer n = do
   s <- get
@@ -62,7 +62,6 @@ dealCardsToDealer n = do
       d' = (dealer s) { dealerHand = dealerHand (dealer s) ++ drawn }
   put s { deck = newDeck, dealer = d' }
 
--- (kept in case you want the old views elsewhere)
 showPlayerState :: Game ()
 showPlayerState = do
   p <- gets player
@@ -77,7 +76,7 @@ showDealerHand = do
   liftIO $ putStrLn $ "Dealer: " ++ show (dealerHand d) ++ "  (value " ++ show v ++ ")"
 
 
--- player's turn: loop until stand or bust
+-- speler beurt
 playerAction :: Game ()
 playerAction = do
   s0 <- get
@@ -93,6 +92,7 @@ playerAction = do
           bet      = playerBet   (player s)   
           remDeck  = deck s
 
+-- de dealer upcard zien we niet, dus die tellen we met de count ook niet mee. zoals in het echt
           seen     = pHand ++ take 1 dHand
           rc       = runningCount seen
           tc       = trueCount seen remDeck
@@ -126,7 +126,7 @@ playerAction = do
         "s" -> liftIO $ putStrLn "Player stands."
         _   -> liftIO (putStrLn "Invalid input.") >> playerAction
 
--- dealer AI: hit until 17+, then settle outcome vs player's value
+-- dealer trekt tot 17+ dan afrekenen
 dealerAction :: Int -> Game ()
 dealerAction playerValue = do
   d <- gets dealer
@@ -158,15 +158,14 @@ dealerAction playerValue = do
             modify (\s -> s { player = payout 0 p })
             showPlayerState
 
--- one complete round
+-- een ronde
 roundOnce :: Game ()
 roundOnce = do
-  -- if you want to keep a continuous shoe, reshuffle only when low; otherwise skip
-  -- (left as-is: you now keep the same multiDeck across rounds)
-  -- modify to clear hands/bets only:
+-- reset handen en bets voor nieuwe ronde
   modify (\s -> s { player = (player s) { playerHand = [], playerBet = 0 }
                   , dealer = (dealer s) { dealerHand = [] } })
 
+-- shuffle als 25% van de kaarten over is
   s <- get
   let cardsLeft    = length (deck s)
       fractionLeft = fromIntegral cardsLeft / fromIntegral initialDeckSize
@@ -187,7 +186,7 @@ roundOnce = do
   let pv = handValue (playerHand p)
   when (pv <= 21) (dealerAction pv)
 
--- loop after each round until player quits
+-- loop na elke ronde
 gameLoop :: Game ()
 gameLoop = do
   roundOnce
@@ -195,7 +194,7 @@ gameLoop = do
   ans <- liftIO getLine
   when (map toLower ans == "y") gameLoop
 
--- runner to start a round from the console
+-- game starten
 gameMain :: IO ()
 gameMain = do
   putStrLn "Welcome to Haskell Blackjack!"
