@@ -48,17 +48,18 @@ combine = foldr insert []
 -- branch 2: als dealer 10 trekt dHand = 26 = bust [(DealerBust, 1)] met 1/2 wegen =[(DealerBust, 0.5 )] 
 -- combineer [(DealerTotal 18, 0.5 ),(DealerBust, 0.5 )] som = 1
 -- per kaart is de kans 1 / length dat
--- roep recursief dealerResultDist aan met de nieuwe hand (h ++ [c]) en nieuwe deck
 
 dealerResultDist :: Hand -> Deck -> [(DealerResult, Double)]
 dealerResultDist h d
   | isBust h = [(DealerBust, 1.0)] -- dealer is bust 
   | dealerShouldStand h = [(DealerTotal (handTotal h), 1.0)] -- dealer heeft 17+ >21
   | null d = [(DealerTotal (handTotal h), 1.0)] -- geen kaarten meer. deck is leeg
+
+-- uitleg
   | otherwise = combine
      [  (r, p / fromIntegral(length d))
       | (c, d') <- chooseOne d
-      , (r, p) <- dealerResultDist (h ++ [c]) d' --recursie! :
+      , (r, p) <- dealerResultDist (h ++ [c]) d' -- roep recursief dealerResultDist aan met de nieuwe hand (h ++ [c]) en nieuwe deck
      ]
 
 
