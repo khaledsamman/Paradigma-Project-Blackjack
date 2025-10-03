@@ -35,11 +35,15 @@ data DealerResult
 
   -- voeg gelijke uitkomsten samen door hun kan op te tellen
 combine :: [(DealerResult, Double)] -> [(DealerResult, Double)]
-combine = foldr insert []
+combine = foldr insert [] -- door de lijst lopen
   where
-    insert (k, p) acc = case lookup k acc of
+
+    -- k = dealerResult
+    -- p = kans die hierbij hoort (bv. 0.25)
+    -- acc = de lijst die al opgebouwd is met samengevoegde resultaten
+    insert (k, p) acc = case lookup k acc of -- kijkt of k voorkomt in acc
       Nothing -> (k, p) : acc
-      Just q -> (k, p + q) : filter ((/= k) . fst) acc
+      Just q -> (k, p + q) : filter ((/= k) . fst) acc -- geef de kans q terug. filter verwijdert de oude k, q
 
 -- kans van dealer
 -- stel dealerHand = 16 (bijvoorbeeld 7 en 9) en er zijn nog 2 kaarten in het deck 2 en 10. dealer moet nog een kaart trekken omdat het nog geen 17 is. dit betekent dat we in het recursief geval zitten.
@@ -55,9 +59,13 @@ dealerResultDist h d
   | dealerShouldStand h = [(DealerTotal (handTotal h), 1.0)] -- dealer heeft 17+ >21
   | null d = [(DealerTotal (handTotal h), 1.0)] -- geen kaarten meer. deck is leeg
 
--- uitleg
+-- combine neemt alle (r, p) paren en groupeert ze per r. vervolgens telt het de p op.
+-- r = dealerResult
+-- p = kans dat dit gebeurt, als je al c hebt gekozen
+-- c = kaart
   | otherwise = combine
-     [  (r, p / fromIntegral(length d))
+  -- omdat elke kaart evenveel kans heeft om gekozen te worden, vermenigvuldig we die kans met 1 / length d
+     [  (r, p / fromIntegral(length d)) -- daarom deel je p door length d
       | (c, d') <- chooseOne d
       , (r, p) <- dealerResultDist (h ++ [c]) d' -- roep recursief dealerResultDist aan met de nieuwe hand (h ++ [c]) en nieuwe deck
      ]
