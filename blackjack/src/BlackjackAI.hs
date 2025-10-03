@@ -14,6 +14,11 @@ import Cards
 -- Middel kaarten (7,8,9) = 0
 -- Hoge kaarten (10, J, Q, K, A) = -1
 
+--ik gebruik hier een wildcard bij case v voor pattern matching zodat ik niet bij iedere int een wildcard hoef te zetten:
+-- hiLoCard :: Card -> Int
+-- hiLoCard (Card Two   _) = 1
+-- dit omdat alleen de waarden van een kaart van belang is en niet het suit van kaart
+
 hiLoCard :: Card -> Int
 hiLoCard (Card v _) = case v of
     Two   -> 1
